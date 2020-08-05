@@ -1,0 +1,36 @@
+doctype html
+html
+    head
+        title KnowledgeBase
+        link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous")
+        link(rel='styleshet' href='/css/stylesheet.css')
+    body
+        nav.navbar.navbar-default
+            .container-fluid
+                // Brand and toggle get grouped for better mobile display
+                .navbar-header
+                    button.navbar-toggle(type='button', data-toggle='collapse', data-target='#bs-example-navbar-collapse-1', aria-expanded='false')
+                        span.sr-only Toggle navigation
+                        span.icon-bar
+                        span.icon-bar
+                        span.icon-bar
+                #bs-example-navbar-collapse-1.collapse.navbar-collapse
+                    ul.nav.navbar-nav
+                        li.active
+                            a(href='./index.jsp') Index
+                        li
+                            a(href='./profile.jsp') Profile
+                    ul.nav.navbar-nav.navbar-right
+                        li
+                            a(href='./LogoutServlet') Logout
+                .container
+            block content
+            br
+            hr
+            footer
+                p Copyright &copy; 2017
+            script(src='/bower_component/jquery/dist/jquery.js')
+            script(src='/bower_component/bootstrap/dist/js/bootstrap.js')
+            script(src='/js/main.js')
+
+
