@@ -6,12 +6,17 @@ const bodyParser = require('body-parser')
 const expressValidator = require('express-validator')
 const flash = require('connect-flash')
 const session = require('express-session')
- 
+const passport = require('passport')
+const config = require('./config/database')
+
 
 
 // coonect to our db
 //mongoose.connect('mongoose://localhost/nodekb');
-mongoose.connect('mongodb://localhost:27017/nodekb', {useNewUrlParser: true, useUnifiedTopology: true});  //Changed fron the series
+//mongoose.connect('mongodb://localhost:27017/nodekb',{useNewUrlParser: true, useUnifiedTopology: true})  //Changed fron the series
+//Its in the config folder now
+mongoose.connect(config.database)
+//console.log(config.database + config.datastring)
 let db =mongoose.connection;
 
 //check connecitons
@@ -29,7 +34,7 @@ db.on('error',(err) => {
 
 // init app
 const app = express();
-app.use(expressValidator());
+
 
 //Bring in model 
 let Article = require('./models/article');
@@ -66,6 +71,21 @@ app.use(function (req, res, next) {
   next();
 });
 
+//We dont have to write the entire thing for the express validator. The middleware is inside the install
+app.use(expressValidator());
+
+//Bring in the passport config
+require('./config/passport')(passport)
+
+//Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.get('*',(req,res,next)=>{
+  res.locals.user = req.user || null
+  next()
+})
+
 
 // Home route
  app.get('/', (req, res) =>{
@@ -75,7 +95,7 @@ app.use(function (req, res, next) {
         } else {
             //console.log(articles)
             res.render('index',{
-                title:'Add Article',
+                title:'Article LIST',
                 articles:articles
         
              })
@@ -84,110 +104,13 @@ app.use(function (req, res, next) {
     });
 });
 
-//get single article
+//Route file
+let articles =require('./routes/articles')
+app.use('/articles',articles)
 
-app.get('/article/:x', (req,res) =>{
-    Article.findById(req.params.x, (err,article)=>{
-        res.render('article',{
-           article:article
-        });
-
-    });
-});
-    
-
-app.get('/articles/add',(req,res) => {
-     res.render('add_article',{
-         title:'Add Article'
-     })
-    })
-
-app.post('/articles/add',(req,res) => {
-   req.checkBody('title','Title is required').notEmpty()
-   req.checkBody('author','Author is required').notEmpty()
-   req.checkBody('body','Body is required').notEmpty()
-
-   let errors = req.validationErrors()
-
-   if (errors){
-    req.flash('danger','Not Valid Entry')   
-    res.render('add_article',{
-           title:'Add Article',
-           errors:errors,
-           
-       })
-     console.log("error messages send")  
-     
-   }else{
-
-   let article = new Article();
-   article.title =req.body.title;
-   console.log(req.body.title)
-   article.author = req.body.author;
-   console.log(req.body.author)
-   article.body = req.body.body;
-   console.log(req.body.body)
-
-   article.save((err)=>{
-       if(err){
-        console.log(err);
-        return;
-       }else {
-           req.flash('success','Article Added')
-           res.redirect('/');
-       }
-   })}
-
-})
-
-//load edit foam
-
-app.get('/article/edit/:x', (req,res) =>{
-    Article.findById(req.params.x, (err,article)=>{
-        res.render('edit_article',{
-            title:'Edit',
-           article:article
-        });
-
-    });
-});
-
-//update submit
-app.post('/articles/edit/:x',(req,res) => {
-    let article = {};
-    article.title =req.body.title;
-    console.log(req.body.title)
-    article.author = req.body.author;
-    console.log(req.body.author)
-    article.body = req.body.body;
-    console.log(req.body.body)
-
-    let query={_id:req.params.x}
- 
-    Article.update(query,article, (err)=>{
-        if(err){
-         console.log(err);
-         return;
-        }else {
-            req.flash('success','Article Updates')
-            res.redirect('/');
-        }
-    });
- 
- })
-
-app.delete('/article/:x',(req,res)=>{
-    let query={_id:req.params.x}
-    Article.deleteOne(query,function(err){
-        if(err){
-            console.log(err)
-        }
-        res.send('Sucess') // This is to the ajex req, since we have to send a reponse to the request
-    })
-}
-)
-
-
+//Route file users
+let users =require('./routes/users')
+app.use('/users',users)
 
 
 //start server
